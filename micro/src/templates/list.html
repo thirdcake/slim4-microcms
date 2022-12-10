@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一覧</title>
+  <style>
+    header, main, footer {
+      width: min(800px, 95%);
+      margin:2em auto;
+      padding:0;border:none;
+    }
+    main > section {
+      margin-bottom: 2em;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content: flex-start;
+      gap: 0 1em;
+    }
+    main > section > div {
+      width: calc(100% - 150px - 1em);
+      display:flex;
+      flex-flow:column;
+    }
+    main > section > div > a > h2 {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>記事一覧</h1>
+    {% if category_name %}
+    <nav>
+      <a href="../index.html">トップページ</a>
+      <span>&nbsp;>&nbsp;{{category_name}}</span>
+    </nav>
+    {% endif %}
+  </header>
+  <main>
+    {% for content in list.contents %}
+    <section>
+      <a href="/a/{{content.id}}.html">
+        <img src="{{content.eyecatch.url}}?w=150" alt="アイキャッチ画像">
+      </a>
+      <div>
+        <time datetime="{{content.revisedAt}}"></time>
+        <a href="/a/{{content.id}}.html">
+          <h2>{{content.title}}</h2>
+        </a>
+        <a href="/c/{{content.category.id}}.html">{{content.category.name}}</a>
+      </div>
+    </section>
+    {% else %}
+    <section>
+      <p>該当するデータはありません。</p>
+    </section>
+    {% endfor %}
+  </main>
+  <footer>
+    <aside id="pager" data-total-count="{{list.totalCount}}" data-offset="{{list.offset}}" data-limit="{{list.limit}}"></aside>
+    <p>&copy; copyright</p>
+  </footer>
+  <script>
+    'use strict';
+    const times = [...document.querySelectorAll('time')];
+    times.forEach(t => {
+      const date = new Date(t.dateTime);
+      t.textContent = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    });
+    const pager = document.getElementById('pager');
+    const data = {
+      total: pager.dataset.totalCount | 0,
+      offset: pager.dataset.offset | 0,
+      limit: pager.dataset.limit | 0
+    }
+    data.max = Math.ceil(data.total / data.limit);
+    data.now = Math.floor(data.offset / data.limit);
+
+    const frag = new Array(data.max).fill(0).reduce((fr, _, idx) => {
+      if(idx === data.now) {
+        fr.appendChild(Object.assign(document.createElement('span'), {
+          textContent: idx + 1,
+        }));
+      } else {
+        fr.appendChild(Object.assign(document.createElement('a'), {
+          href: `?p=${idx}`,
+          textContent: idx + 1,
+        }));
+      }
+      return fr;
+    }, document.createDocumentFragment());
+    pager.appendChild(frag);
+  </script>
+</body>
+</html>
